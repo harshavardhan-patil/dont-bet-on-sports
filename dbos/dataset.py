@@ -3,27 +3,21 @@ from pathlib import Path
 import typer
 from loguru import logger
 from tqdm import tqdm
+import requests
 
-from dbos.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
+from dbos.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, GAMES_URL
 
-app = typer.Typer()
-
-
-@app.command()
+#todo: automate fetching updated dataset and appending to existing post feature pieplines
 def main(
-    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    input_path: Path = RAW_DATA_DIR / "dataset.csv",
+    input_path: Path = RAW_DATA_DIR / "games.csv",
     output_path: Path = PROCESSED_DATA_DIR / "dataset.csv",
-    # ----------------------------------------------
 ):
-    # ---- REPLACE THIS WITH YOUR OWN CODE ----
-    logger.info("Processing dataset...")
-    for i in tqdm(range(10), total=10):
-        if i == 5:
-            logger.info("Something happened for iteration 5.")
-    logger.success("Processing dataset complete.")
-    # -----------------------------------------
-
+    response = requests.get(GAMES_URL)
+    if response.status_code == 200:
+        input_path.write_bytes(response.content)
+        logger.info("Data downloaded successfully")
+    else:
+        logger.error("Failed to download data. Status code:", response.status_code)
 
 if __name__ == "__main__":
-    app()
+    main()

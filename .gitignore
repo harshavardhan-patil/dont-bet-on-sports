@@ -1,5 +1,8 @@
 # Data
-/data/
+/data/raw
+/data/interim
+/data/processed
+/data/external
 
 # Mac OS-specific storage files
 .DS_Store
