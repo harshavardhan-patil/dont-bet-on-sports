@@ -57,7 +57,7 @@ create_environment:
 
 ## Make Dataset
 .PHONY: data
-data: requirements
+data:
 	$(PYTHON_INTERPRETER) dbos/dataset.py
 
 
