@@ -1,30 +1,22 @@
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+from pathlib import Path
+import matplotlib.pyplot as plt
 import typer
-from loguru import logger
+#from loguru import logger
 from tqdm import tqdm
+import joblib
+from sklearn.ensemble import RandomForestRegressor
 
-from dbos.config import MODELS_DIR, PROCESSED_DATA_DIR
+from dbos.config import MODELS_DIR
 
-app = typer.Typer()
+rfr_path = MODELS_DIR / "rfr" / "rfr_latest.pkl"
+def predict_random_forests(df: pd.DataFrame):
+    rfr = joblib.load(rfr_path)
+    return rfr.predict(df)
 
+'''if __name__ == "__main__":
+    logger.info("import guard")'''
 
-@app.command()
-def main(
-    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    features_path: Path = PROCESSED_DATA_DIR / "test_features.csv",
-    model_path: Path = MODELS_DIR / "model.pkl",
-    predictions_path: Path = PROCESSED_DATA_DIR / "test_predictions.csv",
-    # -----------------------------------------
-):
-    # ---- REPLACE THIS WITH YOUR OWN CODE ----
-    logger.info("Performing inference for model...")
-    for i in tqdm(range(10), total=10):
-        if i == 5:
-            logger.info("Something happened for iteration 5.")
-    logger.success("Inference complete.")
-    # -----------------------------------------
-
-
-if __name__ == "__main__":
-    app()
