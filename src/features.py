@@ -6,7 +6,7 @@ from tqdm import tqdm
 import numpy as np
 import pandas as pd
 
-from dbos.config import INTERIM_DATA_DIR, PROCESSED_DATA_DIR, DB_DATA_DIR
+from src.config import INTERIM_DATA_DIR, PROCESSED_DATA_DIR, DB_DATA_DIR
 
 stats_path = DB_DATA_DIR / "stats.csv"
 input_struct_path = DB_DATA_DIR / "input_struct.csv"
@@ -99,6 +99,9 @@ def prepare_tt_data(is_train: bool):
     df_processed = pd.get_dummies(df_processed.drop(columns=['season']))
 
     if is_train:
+        tm_names_path = DB_DATA_DIR / "tm_names.csv"
+        df_tm_names = pd.read_csv(str(tm_names_path), index_col='alias')
+        df_stats = df_stats.merge(df_tm_names, left_index = True, right_index=True,validate='one_to_one')
         df_stats.to_csv(str(stats_path))
         #logger.info("Created stats")
         processed_train_path: Path = PROCESSED_DATA_DIR / "trainset.csv"
@@ -133,7 +136,7 @@ def prepare_data(tm, opp) -> pd.DataFrame:
     #toss decision
     df['won_toss_'+np.random.choice([tm, opp])] = 1
 
-    df_stats = pd.read_csv(stats_path)
+    df_stats = pd.read_csv(stats_path).drop(columns=['name', 'market'])
     df_stats.set_index('alias', inplace=True)
 
     def calc_avg(team, total_games):

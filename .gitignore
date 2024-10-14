@@ -4,6 +4,9 @@
 /data/processed
 /data/external
 
+#Docs
+/docs/
+
 # Mac OS-specific storage files
 .DS_Store
 

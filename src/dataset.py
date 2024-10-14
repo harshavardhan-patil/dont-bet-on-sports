@@ -5,7 +5,7 @@ from loguru import logger
 from tqdm import tqdm
 import requests
 
-from dbos.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, GAMES_URL
+from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, GAMES_URL
 
 #todo: automate fetching updated dataset and appending to existing post feature pieplines
 def main(

@@ -10,7 +10,7 @@ from tqdm import tqdm
 import joblib
 from sklearn.ensemble import RandomForestRegressor
 
-from dbos.config import MODELS_DIR, PROCESSED_DATA_DIR
+from src.config import MODELS_DIR, PROCESSED_DATA_DIR
 
 processed_train_path: Path = PROCESSED_DATA_DIR / "trainset.csv"
 rfr_base_path = MODELS_DIR / "rfr"
