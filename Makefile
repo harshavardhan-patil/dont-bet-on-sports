@@ -58,17 +58,17 @@ create_environment:
 ## Make Dataset
 .PHONY: data
 data:
-	$(PYTHON_INTERPRETER) dbos/dataset.py
+	$(PYTHON_INTERPRETER) src/dataset.py
 
 ## Make Features
 .PHONY: features
 features:
-	$(PYTHON_INTERPRETER) dbos/features.py
+	$(PYTHON_INTERPRETER) src/features.py
 
 ## Make Train
 .PHONY: train
 train:
-	$(PYTHON_INTERPRETER) dbos/modeling/train.py
+	$(PYTHON_INTERPRETER) src/modeling/train.py
 
 #################################################################################
 # Self Documenting Commands                                                     #
