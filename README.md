@@ -1,25 +1,31 @@
 # Don't bet on sports, kids!
-Check out the web-app: https://dont-bet-on-sports-hp.streamlit.app/
 <img src='static/featured_sports_betting_nfl.jpg' alt='NFL Betting Header'/>
+This project applies machine learning to the world of NFL game predictions.<br>
 
-This project applies machine learning to the world of NFL game predictions.
+Check out the [Web App](https://dont-bet-on-sports-hp.streamlit.app/)!
 
 # Table of Contents
 1. [Introduction](#introduction)
-  + [Project Goal](#project-goal)
-  + [Motivation](#motivation)
-  + [NFL Betting Primer](#nfl-betting-primer)
-  + [Challenge](#challenge)
+    + [Project Goal](#project-goal)
+    + [Motivation](#motivation)
+    + [NFL Betting Primer](#nfl-betting-primer)
+    + [Challenge](#challenge)
 2. [Project Structue](#project-structure)
 3. [Data](#data)
-  + [Data Sources](#data-sources)
-  + [Data Cleaning](#data-cleaning)
-  + [Feature Engineering](#feature-engineering)
-    + [Target Variable](#target-variable)
-    + [Adjusted v/s Unadjusted $r\_spread$](#adjusted-vs-unadjusted)
-    + [Weighted Averages](#weighted-averages)
+    + [Data Sources](#data-sources)
+    + [Data Cleaning](#data-cleaning)
+    + [Feature Engineering](#feature-engineering)
+      + [Target Variable](#target-variable)
+      + [Adjusted v/s Unadjusted $r\_spread$](#adjusted-vs-unadjusted)
+      + [Weighted Averages](#weighted-averages)
 4. [Modeling and Results](#modeling-and-results)
-  + [Considering Vegas' Spread](#considering-vegas-spread)
+    + [Considering Vegas' Spread](#considering-vegas-spread)
+      + [Without Vegas Spread](#without-vegas-spread)
+      + [With Vegas Spread](#with-vegas-spread)
+    + [Hyperparameter Tuning](#hyperparameter-tuning)
+    + [Best Estimators](#best-estimators)
+5. [Web App](#web-app)
+6. [Next Steps](#next-steps)
 <BR>
 
 # Introduction
@@ -113,11 +119,11 @@ The backfilled data had certain values missing, some of which were valuable whil
 
 ## Feature Engineering
 ### Target Variable 
-We want to predict the unadjusted home team spread which will be denoted as follows $$r\_spread=tm\_score - opp\_score$$ <br>
+We want to predict the unadjusted home team spread which will be denoted as follows $$r\\_spread=tm\\_score - opp\\_score$$ <br>
 This target variable allows us to predict two outcomes: <br>
-1. <strong>Winning Team</strong><br> If the $r\_spread$ is negative, we can predict that the home team loses the game (by virtue of scoring less than the away team) and vice versa.
-2. <strong>Margin of Victory</strong><br> The magnitude and sign of $r\_spread$ allows us to predict the margin of victory and make bets with odds which fall within this margin. Expectedly these will be far and few.
-### Adjusted v/s Unadjusted $r\_spread$
+1. <strong>Winning Team</strong><br> If the $r\_{spread}$ is negative, we can predict that the home team loses the game (by virtue of scoring less than the away team) and vice versa.
+2. <strong>Margin of Victory</strong><br> The magnitude and sign of $r\_{spread}$ allows us to predict the margin of victory and make bets with odds which fall within this margin. Expectedly these will be far and few.
+### Adjusted v/s Unadjusted $r\\_spread$
 How does Vegas come up with the $spread?$
 * Vegas' assesses team strength, injuries, home/away factors, public sentiment, recent performances, and other factors like weather to create best estimate of opening point spread.
 * As money flows in, sportsbooks adjust the spread to balance the betting on both sides to reduce risk exposure.
@@ -125,7 +131,7 @@ How does Vegas come up with the $spread?$
 This vig (or "juice") is how the bookmaker ensures profit. Even if the bets are split evenly between both sides, the sportsbook makes a small percentage from the vigorish.
 * If more people bet on the favorite, the bookmaker shifts the spread to encourage more bets on the underdog (or vice versa). This is done to avoid being overexposed to one side of the bet.<br>
 TLDR: Vegas' spread is adjusted to minimize bookmakers risk and maximize, you guessed it, bookmakers profit.<br>
-Since $r\_spread$ solely depends on the resulting margin of victory without any other adjustments, it can then be compared to Vegas' spread to pinpoint misvalued games, which can happen for example, when a large home population bets on their own team out of sentiment and so on.
+Since $r\\_spread$ solely depends on the resulting margin of victory without any other adjustments, it can then be compared to Vegas' spread to pinpoint misvalued games, which can happen for example, when a large home population bets on their own team out of sentiment and so on.
 ### Weighted Averages
 The game attributes such as pass completions, touchdowns are present for that specific game. Obviously we won't know the actual values for these attributes until the game has finished. What we need then is to look at the past performance of the teams for those specific attributes. It can also be safely assumed that a teams touchdown stats in season 2000 are not going to matter much as compared to the current season. Hence we will use todo weighted averages for these attributes.
 
@@ -164,6 +170,8 @@ I used [RandomizedSearchCV](https://scikit-learn.org/1.5/modules/generated/sklea
 |Random Forests|9.95|
 |Support Vectors|10.97|
 |Gradient Boosted Trees|10.10|
+
+
 Our performance has certainly improved, but our best estimate still falls well short of Vegas.
 
 ## Best Estimators
@@ -199,3 +207,5 @@ This project is being actively developed, hence this list will certainly not be 
 3. Seasonally weighted averages, yes I have been lazy in not implementing these, so really this should be #1 on the list.
 
 <h2>Thank you for visiting!</h2>
+
+

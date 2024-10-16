@@ -51,7 +51,6 @@ with col2:
     st.markdown("[![Img Attr](./app/static/vs.png)](https://pngtree.com/freepng/vector-illustration-of-versus-battle-vs-icon-black-orange-color_5740367.html')")
 
 if st.button("Make Me MONEYYY!", icon= "🤑"):
-    logger.info(tm)
     tm_name = get_name(tm)
     opp_name = get_name(opp)
     df_predict = prepare_data(tm, opp)
