@@ -17,8 +17,9 @@ This project applies machine learning to the world of NFL game predictions.
   + [Feature Engineering](#feature-engineering)
     + [Target Variable](#target-variable)
     + [Adjusted v/s Unadjusted $r\_spread$](#adjusted-vs-unadjusted)
-    + [Considering Vegas' Spread](#considering-vegas-spread)
     + [Weighted Averages](#weighted-averages)
+4. [Modeling and Results](#modeling-and-results)
+  + [Considering Vegas' Spread](#considering-vegas-spread)
 <BR>
 
 # Introduction
@@ -125,11 +126,6 @@ This vig (or "juice") is how the bookmaker ensures profit. Even if the bets are 
 * If more people bet on the favorite, the bookmaker shifts the spread to encourage more bets on the underdog (or vice versa). This is done to avoid being overexposed to one side of the bet.<br>
 TLDR: Vegas' spread is adjusted to minimize bookmakers risk and maximize, you guessed it, bookmakers profit.<br>
 Since $r\_spread$ solely depends on the resulting margin of victory without any other adjustments, it can then be compared to Vegas' spread to pinpoint misvalued games, which can happen for example, when a large home population bets on their own team out of sentiment and so on.
-### Considering Vegas' Spread
-PFR stores Vegas' spread, over/under and moneylines for past and upcoming games as well. Do we include these as predictor variables in our predictions?<br>
-<img src='reports/figures/vegas_spread_error.png' alt='Vegas Spread Error'/>
-Including the Vegas' spread would have benefits of building our model on top of Vegas' own research. Vegas' spread is also often the strongest indicator for outright prediction of winning team. On the other hand we are explicitly trying to finds cases where Vegas' spread is wrong. The first model is built wothout considering Vegas' spread. I will also build a model with Vegas' spread to measure how $r\_spread$ is affected by it.
-
 ### Weighted Averages
 The game attributes such as pass completions, touchdowns are present for that specific game. Obviously we won't know the actual values for these attributes until the game has finished. What we need then is to look at the past performance of the teams for those specific attributes. It can also be safely assumed that a teams touchdown stats in season 2000 are not going to matter much as compared to the current season. Hence we will use todo weighted averages for these attributes.
 
@@ -139,9 +135,67 @@ The game attributes such as pass completions, touchdowns are present for that sp
 3. The weather conditions will have to be estimated per stadium based on time of year and so on. We will start off with a simple average of all matches hosted at that specific stadium for now.
 
 # Modeling and Results
-Two models were used for regressing $r\_spread$
-## Random Forests
-<img src='reports/figures/Random Forests_rspread_error_wo.png' alt='Random Forests Spread Error'/>
+Three models were tested for regressing $r\_spread$. 
+1. Random Forests
+2. Support Vectors
+3. Gradient Boosted Trees
+## Considering Vegas' Spread
+PFR stores Vegas' spread, over/under and moneylines for past and upcoming games as well. Do we include these as predictor variables in our predictions?<br>
+<img src='reports/figures/vegas_spread_error.png' alt='Vegas Spread Error'/>
+Including the Vegas' spread would have benefits of building our model on top of Vegas' own research. Vegas' spread is also often the strongest indicator for outright prediction of winning team. On the other hand we are explicitly trying to finds cases where Vegas' spread is wrong. So I compared models both with and without Vegas' spread to measure how our prediction of $r\_spread$ is affected by it.<br>
 
-## Support Vectors
-<img src='reports/figures/Support Vectors_rspread_error_wo.png' alt='Support Vectors Spread Error'/>
+### Without Vegas Spread
+<img src='reports/figures/Random Forests_rspread_error_wo.png' alt='Random Forests Spread Error wo Vegas'/>
+<img src='reports/figures/Support Vectors_rspread_error_wo.png' alt='Support Vectors Spread Error wo Vegas'/>
+<img src='reports/figures/Gradient Boosted Trees_rspread_error_wo.png' alt='Gradient Boosted Trees Error wo Vegas'/>
+<br>
+
+### With Vegas Spread
+<img src='reports/figures/Random Forests_rspread_error_wv.png' alt='Random Forests Spread Error wo Vegas'/>
+<img src='reports/figures/Support Vectors_rspread_error_wv.png' alt='Support Vectors Spread Error wo Vegas'/>
+<img src='reports/figures/Gradient Boosted Trees_rspread_error_wv.png' alt='Gradient Boosted Trees Error wo Vegas'/>
+
+We saw a slight (and significant in case of GBT) improvements in our Mean Absolute Error (MAE) for all 3 models with Vegas' spread being included in the mix. Still we are performing much worse than Vegas is!
+
+## Hyperparameter Tuning
+I used [RandomizedSearchCV](https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.RandomizedSearchCV.html#randomizedsearchcv) to perform 3-fold cross validation with 30 iterations on all 3 models, acheiving the following result
+| Model | MAE |
+| ------ | ------ |
+|Random Forests|9.95|
+|Support Vectors|10.97|
+|Gradient Boosted Trees|10.10|
+Our performance has certainly improved, but our best estimate still falls well short of Vegas.
+
+## Best Estimators
+<img src='reports/figures/top_feature_importances.png' alt='Top Feature Importances'/>
+Based on the chart of feature importances we can derive few potential insights:
+
+1. **Vegas on top**<br>
+tm_spread and opp_spread, both predicted by Vegas are the strongest estimators and speaks to the strength of bookmakers predictive power.
+This suggests that market predictions and pre-game odds play a significant role in the model’s performance. This could indicate that point spreads are strongly correlated with team performance and outcomes.
+2. **Weather factors such as humidity and temperature have meaningful impact**<br>
+Features like humidity_pct and temperature are among the top contributors. Weather conditions might affect player performance (especially in outdoor games), strategy, or ball control, leading to their significance. These insights could indicate that certain teams perform better or worse under specific weather conditions.
+3. **Fourth down conversion attempts and success rate are important**<br>
+Metrics such as fourth_down_att and fourth_down_conv_pct show that teams' decisions to attempt fourth-down conversions, and their success rates, are key factors. This reflects coaching strategy and game aggressiveness. The importance of fourth-down conversions could indicate that taking risks on critical plays significantly affects game outcomes.
+4. **Possession time matters**<br>
+time_of_possession appears as a relevant feature. Teams that control the ball longer can dominate the game by tiring out the opponent’s defense or running down the clock.
+5. **Penalties and turnovers influence performance**<br>
+opp_penalties and tm_fumbles are important indicators, showing that discipline and ball security impact game outcomes. Teams with fewer penalties or turnovers have an advantage.
+6. **Passing and rushing metrics play a role**<br>
+tm_pass_int (team pass interceptions) and opp_pass_int (opponent pass interceptions) reflect the importance of turnover margins.
+tm_rush_tds (team rushing touchdowns) indicate that having a strong rushing game correlates with better outcomes.
+7. **Week is relevant**<br>
+The feature week suggests that the performance varies across the season. This could reflect fatigue, player injuries, or weather changes across different weeks of the NFL season.
+
+
+# Web App
+The model is accessible with an interactive web-app. This allows users to select a home-team and an away-team, after which the model internally predicts a $r\_spread$ score and outputs and estimation of the winning team along with the predicted spread.
+<img src='reports/figures/web-app-ui.jpeg' alt='Web App UI'/>
+
+# Next Steps
+This project is being actively developed, hence this list will certainly not be the most comprehensive. However the following are the current priorities:
+1. Improve predictive performance through different models.
+2. Setup the model to predict games for the ongoing season. This will require extensive additions to the data pipeline and training pipeline. However the aim is to setup daily jobs that will update the current season stats.
+3. Seasonally weighted averages, yes I have been lazy in not implementing these, so really this should be #1 on the list.
+
+<h2>Thank you for visiting!</h2>

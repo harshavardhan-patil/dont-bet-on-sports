@@ -18,8 +18,8 @@ def prepare_tt_data(is_train: bool):
     #Removing certain columns based on logic mentioned in EDA notebook
     df = df.drop(columns=['won_toss_decision', 'won_toss_overtime', 'won_toss_overtime_decision', 'game_time', 
                           'tm_pass_cmp_pct' , 'opp_pass_cmp_pct', 'event_date', 'tm_nano', 'tm_name', 'tm_market',
-                            'tm_spread', 'opp_nano', 'opp_name', 'opp_market', 'opp_spread', 'status', 'opp_alt_market',
-                              'tm_alt_market', 'total', 'tm_alt_alias', 'opp_alt_alias', 'attendance', 'duration', 'surface_type'])
+                             'opp_nano', 'opp_name', 'opp_market', 'status', 'opp_alt_market',
+                              'tm_alt_market', 'tm_alt_alias', 'opp_alt_alias', 'attendance', 'duration', 'surface_type'])
     
     #filling domed/indoor stadiums weather conditions within a range
     df['temperature'] = df['temperature'].map(lambda t : t if not np.isnan(t) else float(np.random.randint(60., 76.)))
