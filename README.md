@@ -16,7 +16,7 @@ Check out the [Web App](https://dont-bet-on-sports-hp.streamlit.app/)!
     + [Data Cleaning](#data-cleaning)
     + [Feature Engineering](#feature-engineering)
       + [Target Variable](#target-variable)
-      + [Adjusted v/s Unadjusted $r\\_spread$](#adjusted-vs-unadjusted)
+      + [Adjusted v/s Unadjusted r_spread](#adjusted-vs-unadjusted)
       + [Weighted Averages](#weighted-averages)
 4. [Modeling and Results](#modeling-and-results)
     + [Considering Vegas' Spread](#considering-vegas-spread)
