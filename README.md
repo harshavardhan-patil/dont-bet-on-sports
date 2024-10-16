@@ -119,10 +119,10 @@ The backfilled data had certain values missing, some of which were valuable whil
 
 ## Feature Engineering
 ### Target Variable 
-We want to predict the unadjusted home team spread which will be denoted as follows $$r\\_spread=tm\\_score - opp\\_score$$ <br>
+We want to predict the unadjusted home team spread which will be denoted as follows <br> $$r\\_spread=tm\\_score - opp\\_score$$ <br>
 This target variable allows us to predict two outcomes: <br>
-1. <strong>Winning Team</strong><br> If the $r\_{spread}$ is negative, we can predict that the home team loses the game (by virtue of scoring less than the away team) and vice versa.
-2. <strong>Margin of Victory</strong><br> The magnitude and sign of $r\_{spread}$ allows us to predict the margin of victory and make bets with odds which fall within this margin. Expectedly these will be far and few.
+1. <strong>Winning Team</strong><br> If the $r\\_spread$ is negative, we can predict that the home team loses the game (by virtue of scoring less than the away team) and vice versa.
+2. <strong>Margin of Victory</strong><br> The magnitude and sign of $r\\_spread$ allows us to predict the margin of victory and make bets with odds which fall within this margin. Expectedly these will be far and few.
 ### Adjusted v/s Unadjusted $r\\_spread$
 How does Vegas come up with the $spread?$
 * Vegas' assesses team strength, injuries, home/away factors, public sentiment, recent performances, and other factors like weather to create best estimate of opening point spread.
@@ -137,18 +137,18 @@ The game attributes such as pass completions, touchdowns are present for that sp
 
 **Consideration for Weighted Averages**
 1. Since different teams can play different number of games leading upto a matchup, we will convert each stat to per game.
-2. Weights $w$ would be assigned per season where *n* is the current season such that: $$ w_n > w_{n-1} >> w_{n-2}...$$
+2. Weights $w$ would be assigned per season where *n* is the current season such that: $$w_n > w_{n-1} >> w_{n-2}...$$
 3. The weather conditions will have to be estimated per stadium based on time of year and so on. We will start off with a simple average of all matches hosted at that specific stadium for now.
 
 # Modeling and Results
-Three models were tested for regressing $r\_spread$. 
+Three models were tested for regressing $r\\_spread$. 
 1. Random Forests
 2. Support Vectors
 3. Gradient Boosted Trees
 ## Considering Vegas' Spread
 PFR stores Vegas' spread, over/under and moneylines for past and upcoming games as well. Do we include these as predictor variables in our predictions?<br>
 <img src='reports/figures/vegas_spread_error.png' alt='Vegas Spread Error'/>
-Including the Vegas' spread would have benefits of building our model on top of Vegas' own research. Vegas' spread is also often the strongest indicator for outright prediction of winning team. On the other hand we are explicitly trying to finds cases where Vegas' spread is wrong. So I compared models both with and without Vegas' spread to measure how our prediction of $r\_spread$ is affected by it.<br>
+Including the Vegas' spread would have benefits of building our model on top of Vegas' own research. Vegas' spread is also often the strongest indicator for outright prediction of winning team. On the other hand we are explicitly trying to finds cases where Vegas' spread is wrong. So I compared models both with and without Vegas' spread to measure how our prediction of $r\\_spread$ is affected by it.<br>
 
 ### Without Vegas Spread
 <img src='reports/figures/Random Forests_rspread_error_wo.png' alt='Random Forests Spread Error wo Vegas'/>
