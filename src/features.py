@@ -1,17 +1,45 @@
 from pathlib import Path
 
 import typer
-#from loguru import logger
+from loguru import logger
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import MinMaxScaler
 
 from src.config import INTERIM_DATA_DIR, PROCESSED_DATA_DIR, DB_DATA_DIR
 
 stats_path = DB_DATA_DIR / "stats.csv"
 input_struct_path = DB_DATA_DIR / "input_struct.csv"
 
-def prepare_tt_data(is_train: bool):
+def scale_features(df: pd.DataFrame) -> pd.DataFrame:
+    #one-hot encoded columns
+    def filter_columns(column_names):
+        return [col for col in column_names if not (col.startswith('tm_alias') 
+                                                    or col.startswith('opp_alias') 
+                                                    or col.startswith('week_day') 
+                                                    or col.startswith('won_toss') 
+                                                    or col.startswith('tm_location') 
+                                                    or col.startswith('opp_location')
+                                                    or col.startswith('wind_speed') 
+                                                    or col.startswith('roof_type')  
+                                                    or col in ['week', 'wind_speed', 'r_spread'])]
+
+    data_cols = filter_columns(df.columns.unique().to_list())
+
+    #standardization with robust handling of outliers
+    robust_scaler = RobustScaler()
+    df.loc[:,data_cols] = robust_scaler.fit_transform(df.loc[:,data_cols])
+
+    #normalizing right skewed wind_speed
+    min_max_scaler = MinMaxScaler()
+    df.loc[:,['wind_speed']] = min_max_scaler.fit_transform(df.loc[:,['wind_speed']])
+    
+    return df
+    
+
+def prepare_tt_data(is_train: bool, is_scale = True):
     input_path = INTERIM_DATA_DIR / "trainset.csv" if is_train else INTERIM_DATA_DIR / "testset.csv"
     df = pd.read_csv(str(input_path), index_col='id')
 
@@ -96,23 +124,26 @@ def prepare_tt_data(is_train: bool):
         return r
 
     df_processed = df.apply(calc_stats, axis=1)
-    df_processed = pd.get_dummies(df_processed.drop(columns=['season']))
+    if is_scale:
+        df_processed = scale_features(pd.get_dummies(df_processed.drop(columns=['season'])))
+    else: 
+        df_processed = pd.get_dummies(df_processed.drop(columns=['season']))
 
     if is_train:
         tm_names_path = DB_DATA_DIR / "tm_names.csv"
         df_tm_names = pd.read_csv(str(tm_names_path), index_col='alias')
         df_stats = df_stats.merge(df_tm_names, left_index = True, right_index=True,validate='one_to_one')
         df_stats.to_csv(str(stats_path))
-        #logger.info("Created stats")
+        logger.info("Created stats")
         processed_train_path: Path = PROCESSED_DATA_DIR / "trainset.csv"
         df_processed.to_csv(processed_train_path)
-        #logger.info("Created trainset")
+        logger.info("Created trainset")
         pd.DataFrame(0., index=[0], columns=df_processed.columns).to_csv(input_struct_path, index=False)
-        #logger.info("Created input struct")
+        logger.info("Created input struct")
     else:
         processed_test_path: Path = PROCESSED_DATA_DIR / "testset.csv"
         df_processed.to_csv(processed_test_path)
-        #logger.info("Created testset")
+        logger.info("Created testset")
     
         
 

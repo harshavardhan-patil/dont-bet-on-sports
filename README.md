@@ -167,9 +167,9 @@ We saw a slight (and significant in case of GBT) improvements in our Mean Absolu
 I used [RandomizedSearchCV](https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.RandomizedSearchCV.html#randomizedsearchcv) to perform 3-fold cross validation with 30 iterations on all 3 models, acheiving the following result
 | Model | MAE |
 | ------ | ------ |
-|Random Forests|9.95|
-|Support Vectors|10.97|
-|Gradient Boosted Trees|10.10|
+|Random Forests|9.97|
+|Support Vectors|10.06|
+|Gradient Boosted Trees|10.05|
 
 
 Our performance has certainly improved, but our best estimate still falls well short of Vegas.

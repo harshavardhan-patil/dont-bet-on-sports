@@ -1,0 +1,18 @@
+name: Scheduled Pinger
+# This workflow is triggered at a scheduled interval of every 3 hours
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string.
+    # At 30 minutes past the hour, every 3 hours
+    - cron:  '30 */3 * * *'
+
+jobs:
+  pinger_job:
+    name: keep app awake
+    runs-on: ubuntu-latest
+    env:
+      URL: https://dont-bet-on-sports-hp.streamlit.app/
+      METHOD: GET  
+    steps:
+      - id: ping
+        uses: sisodiya2421/pinger@master
