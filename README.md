@@ -97,7 +97,9 @@ This project follows the [CCDS Template](https://cookiecutter-data-science.drive
     │   ├── predict.py          <- Code to run model inference with trained models          
     │   └── train.py            <- Code to train models
     │
-    └── plots.py                <- Code to create visualizations
+    ├── pipeline.py             <- Code to run the whole ML pipeline
+    │
+    └── reports.py              <- Code to analyze model performance and create visualizations
 ```
 
 --------
@@ -145,6 +147,7 @@ Three models were tested for regressing $r\\_spread$.
 1. Random Forests
 2. Support Vectors
 3. Gradient Boosted Trees
+4. Neural Network
 ## Considering Vegas' Spread
 PFR stores Vegas' spread, over/under and moneylines for past and upcoming games as well. Do we include these as predictor variables in our predictions?<br>
 <img src='reports/figures/vegas_spread_error.png' alt='Vegas Spread Error'/>
@@ -171,7 +174,6 @@ I used [RandomizedSearchCV](https://scikit-learn.org/1.5/modules/generated/sklea
 |Support Vectors|10.06|
 |Gradient Boosted Trees|10.05|
 
-
 Our performance has certainly improved, but our best estimate still falls well short of Vegas.
 
 ## Best Estimators
@@ -194,6 +196,22 @@ tm_pass_int (team pass interceptions) and opp_pass_int (opponent pass intercepti
 tm_rush_tds (team rushing touchdowns) indicate that having a strong rushing game correlates with better outcomes.
 7. **Week is relevant**<br>
 The feature week suggests that the performance varies across the season. This could reflect fatigue, player injuries, or weather changes across different weeks of the NFL season.
+
+## Betting Simulation
+<img src='reports/figures/nn_sim.png' alt='Neural Net Betting Simulation'/>
+
+Our best simulation was with the PyTorch based Neural Network. The bets that we placed were based on the following logic:
+1. For each bet we wager $110.
+2. When Vegas spreadline is negative for a team i.e when a team is considered favorites, we check if our predicted r_spread is positive i.e our prediction considers a team favorite.
+3. Similarly when Vegas spreadline is positive for a team i.e when a team is considered underdog, we check if our predicted r_spread is negative i.e our prediction considers a team favorite.
+4. When Vegas' prediction matches with ours and the margin of our prediction is greater than 3 (margin of a single goal kick), then we place the bet.<br>
+
+|||
+| ------ | ------ |
+|Total Wagered | 43230|
+|Total PnL| 2550|
+|||
+
 
 
 # Web App

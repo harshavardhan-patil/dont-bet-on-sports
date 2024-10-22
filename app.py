@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from src.config import DB_DATA_DIR
-from src.modeling.predict import predict_random_forests
+from src.modeling.predict import predict_nn
 from src.features import prepare_data
 import base64
 from loguru import logger
@@ -54,7 +54,7 @@ if st.button("Make Me MONEYYY!", icon= "🤑"):
     tm_name = get_name(tm)
     opp_name = get_name(opp)
     df_predict = prepare_data(tm, opp)
-    r_spread = predict_random_forests(df_predict)[0]
+    r_spread = predict_nn(df_predict)[0][0]
     if r_spread > 0:
         st.header("_"+tm_name+" win!"+"_")
         st.subheader(tm_name+" Spread Line: -"+str(round(r_spread)))

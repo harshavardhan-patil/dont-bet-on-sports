@@ -70,6 +70,11 @@ features:
 train:
 	$(PYTHON_INTERPRETER) src/modeling/train.py
 
+## Make Pipline
+.PHONY: pipeline
+pipeline:
+	$(PYTHON_INTERPRETER) src/pipeline.py
+
 #################################################################################
 # Self Documenting Commands                                                     #
 #################################################################################
