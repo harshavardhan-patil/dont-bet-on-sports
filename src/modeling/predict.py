@@ -58,7 +58,7 @@ def predict_nn(df: pd.DataFrame):
     nn_path = MODELS_DIR / "neural_net.pt"
     input_dim = X.shape[1]
     model = NFLPredictor(input_dim)
-    model.load_state_dict(torch.load(str(nn_path), weights_only=True))
+    model.load_state_dict(torch.load(str(nn_path), weights_only=True, map_location=torch.device('cpu')))
     model.eval()
     results = None
     with torch.no_grad():
