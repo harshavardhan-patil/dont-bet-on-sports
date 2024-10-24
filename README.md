@@ -160,9 +160,10 @@ Including the Vegas' spread would have benefits of building our model on top of 
 <br>
 
 ### With Vegas Spread
-<img src='reports/figures/Random Forests_rspread_error_wv.png' alt='Random Forests Spread Error wo Vegas'/>
-<img src='reports/figures/Support Vectors_rspread_error_wv.png' alt='Support Vectors Spread Error wo Vegas'/>
-<img src='reports/figures/Gradient Boosted Trees_rspread_error_wv.png' alt='Gradient Boosted Trees Error wo Vegas'/>
+<img src='reports/figures/Random Forests_rspread_error.png' alt='Random Forests Spread Error w Vegas'/>
+<img src='reports/figures/Support Vectors_rspread_error.png' alt='Support Vectors Spread Error w Vegas'/>
+<img src='reports/figures/Gradient Boosted Trees_rspread_error.png' alt='Gradient Boosted Trees Error w Vegas'/>
+<img src='reports/figures/Neural Network_rspread_error.png' alt='Neural Network Error wo Vegas'/>
 
 We saw a slight (and significant in case of GBT) improvements in our Mean Absolute Error (MAE) for all 3 models with Vegas' spread being included in the mix. Still we are performing much worse than Vegas is!
 
@@ -173,6 +174,7 @@ I used [RandomizedSearchCV](https://scikit-learn.org/1.5/modules/generated/sklea
 |Random Forests|9.97|
 |Support Vectors|10.06|
 |Gradient Boosted Trees|10.05|
+|Neural Net|11.47|
 
 Our performance has certainly improved, but our best estimate still falls well short of Vegas.
 
@@ -196,23 +198,6 @@ tm_pass_int (team pass interceptions) and opp_pass_int (opponent pass intercepti
 tm_rush_tds (team rushing touchdowns) indicate that having a strong rushing game correlates with better outcomes.
 7. **Week is relevant**<br>
 The feature week suggests that the performance varies across the season. This could reflect fatigue, player injuries, or weather changes across different weeks of the NFL season.
-
-## Betting Simulation
-<img src='reports/figures/nn_sim.png' alt='Neural Net Betting Simulation'/>
-
-Our best simulation was with the PyTorch based Neural Network. The bets that we placed were based on the following logic:
-1. For each bet we wager $110.
-2. When Vegas spreadline is negative for a team i.e when a team is considered favorites, we check if our predicted r_spread is positive i.e our prediction considers a team favorite.
-3. Similarly when Vegas spreadline is positive for a team i.e when a team is considered underdog, we check if our predicted r_spread is negative i.e our prediction considers a team favorite.
-4. When Vegas' prediction matches with ours and the margin of our prediction is greater than 3 (margin of a single goal kick), then we place the bet.<br>
-
-|||
-| ------ | ------ |
-|Total Wagered | 43230|
-|Total PnL| 2550|
-|||
-
-
 
 # Web App
 The model is accessible with an interactive web-app. This allows users to select a home-team and an away-team, after which the model internally predicts a $r\_spread$ score and outputs and estimation of the winning team along with the predicted spread.

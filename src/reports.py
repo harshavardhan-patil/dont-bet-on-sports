@@ -11,7 +11,7 @@ import joblib
 from src.modeling.predict import predict_random_forests, predict_support_vectors, predict_gbt, predict_nn
 
 #toggle for saving new plots, if false plots are only displayed
-SAVE = False
+SAVE = True
 
 RF = "Random Forests"
 SVM = "Support Vector Machines"
@@ -35,7 +35,7 @@ def analyze_random_forests():
     mae = mean_absolute_error(df_unscaled['r_spread'], results)
     logger.info(f"{RF} MAE: {mae}")
     df_model = df_unscaled.assign(pred = results)
-    #plot_error(df_model, RF)
+    plot_error(df_model, RF)
     plot_sim(results, RF, 2)
 
 def analyze_support_vectors():
@@ -48,7 +48,7 @@ def analyze_support_vectors():
     mae = mean_absolute_error(df_unscaled['r_spread'], results)
     logger.info(f"{SVM} MAE: {mae}")
     df_model = df_scaled.assign(pred = results)
-    #plot_error(df_model, SVM)
+    plot_error(df_model, SVM)
     plot_sim(results, SVM, 3)
     
 def analyze_gradient_boosted_trees():
@@ -61,7 +61,7 @@ def analyze_gradient_boosted_trees():
     mae = mean_absolute_error(df_unscaled['r_spread'], results)
     logger.info(f"{GBT} MAE: {mae}")
     df_model = df_unscaled.assign(pred = results)
-    #plot_error(df_model, GBT)
+    plot_error(df_model, GBT)
     plot_sim(results, GBT, 2)
 
 def analyze_nn():
@@ -74,7 +74,7 @@ def analyze_nn():
     mae = mean_absolute_error(df_unscaled['r_spread'], results)
     logger.info(f"{NN} MAE: {mae}")
     df_model = df_scaled.assign(pred = results)
-    #plot_error(df_model, NN)
+    plot_error(df_model, NN)
     plot_sim(results, NN, 3)
 
 def plot_error(df_model: pd.DataFrame, model: str):

@@ -59,5 +59,5 @@ if st.button("Make Me MONEYYY!", icon= "🤑"):
         st.header("_"+tm_name+" win!"+"_")
         st.subheader(tm_name+" Spread Line: -"+str(round(r_spread)))
     else:
-        st.header("_"+opp_name+" wins!"+"_")
+        st.header("_"+opp_name+" win!"+"_")
         st.subheader(opp_name+" Spread Line: "+str(round(r_spread)))
