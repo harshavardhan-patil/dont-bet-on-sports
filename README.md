@@ -97,7 +97,9 @@ This project follows the [CCDS Template](https://cookiecutter-data-science.drive
     │   ├── predict.py          <- Code to run model inference with trained models          
     │   └── train.py            <- Code to train models
     │
-    └── plots.py                <- Code to create visualizations
+    ├── pipeline.py             <- Code to run the whole ML pipeline
+    │
+    └── reports.py              <- Code to analyze model performance and create visualizations
 ```
 
 --------
@@ -145,6 +147,7 @@ Three models were tested for regressing $r\\_spread$.
 1. Random Forests
 2. Support Vectors
 3. Gradient Boosted Trees
+4. Neural Network
 ## Considering Vegas' Spread
 PFR stores Vegas' spread, over/under and moneylines for past and upcoming games as well. Do we include these as predictor variables in our predictions?<br>
 <img src='reports/figures/vegas_spread_error.png' alt='Vegas Spread Error'/>
@@ -157,9 +160,10 @@ Including the Vegas' spread would have benefits of building our model on top of 
 <br>
 
 ### With Vegas Spread
-<img src='reports/figures/Random Forests_rspread_error_wv.png' alt='Random Forests Spread Error wo Vegas'/>
-<img src='reports/figures/Support Vectors_rspread_error_wv.png' alt='Support Vectors Spread Error wo Vegas'/>
-<img src='reports/figures/Gradient Boosted Trees_rspread_error_wv.png' alt='Gradient Boosted Trees Error wo Vegas'/>
+<img src='reports/figures/Random Forests_rspread_error.png' alt='Random Forests Spread Error w Vegas'/>
+<img src='reports/figures/Support Vectors_rspread_error.png' alt='Support Vectors Spread Error w Vegas'/>
+<img src='reports/figures/Gradient Boosted Trees_rspread_error.png' alt='Gradient Boosted Trees Error w Vegas'/>
+<img src='reports/figures/Neural Network_rspread_error.png' alt='Neural Network Error wo Vegas'/>
 
 We saw a slight (and significant in case of GBT) improvements in our Mean Absolute Error (MAE) for all 3 models with Vegas' spread being included in the mix. Still we are performing much worse than Vegas is!
 
@@ -167,10 +171,10 @@ We saw a slight (and significant in case of GBT) improvements in our Mean Absolu
 I used [RandomizedSearchCV](https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.RandomizedSearchCV.html#randomizedsearchcv) to perform 3-fold cross validation with 30 iterations on all 3 models, acheiving the following result
 | Model | MAE |
 | ------ | ------ |
-|Random Forests|9.95|
-|Support Vectors|10.97|
-|Gradient Boosted Trees|10.10|
-
+|Random Forests|9.97|
+|Support Vectors|10.06|
+|Gradient Boosted Trees|10.05|
+|Neural Net|11.47|
 
 Our performance has certainly improved, but our best estimate still falls well short of Vegas.
 
@@ -194,7 +198,6 @@ tm_pass_int (team pass interceptions) and opp_pass_int (opponent pass intercepti
 tm_rush_tds (team rushing touchdowns) indicate that having a strong rushing game correlates with better outcomes.
 7. **Week is relevant**<br>
 The feature week suggests that the performance varies across the season. This could reflect fatigue, player injuries, or weather changes across different weeks of the NFL season.
-
 
 # Web App
 The model is accessible with an interactive web-app. This allows users to select a home-team and an away-team, after which the model internally predicts a $r\_spread$ score and outputs and estimation of the winning team along with the predicted spread.

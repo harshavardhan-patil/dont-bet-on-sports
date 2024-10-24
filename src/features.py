@@ -1,16 +1,56 @@
 from pathlib import Path
 
-import typer
-#from loguru import logger
-from tqdm import tqdm
+from loguru import logger
+import joblib
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import RobustScaler, MinMaxScaler, StandardScaler
 
-from src.config import INTERIM_DATA_DIR, PROCESSED_DATA_DIR, DB_DATA_DIR
+from src.config import INTERIM_DATA_DIR, PROCESSED_DATA_DIR, DB_DATA_DIR, MODELS_DIR
 
 stats_path = DB_DATA_DIR / "stats.csv"
 input_struct_path = DB_DATA_DIR / "input_struct.csv"
+scaled_train_path: Path = PROCESSED_DATA_DIR / "scaled" / "trainset.csv"
+scaled_test_path: Path = PROCESSED_DATA_DIR / "scaled" /"testset.csv"
+unscaled_train_path: Path = PROCESSED_DATA_DIR / "unscaled" / "trainset.csv"
+unscaled_test_path: Path = PROCESSED_DATA_DIR / "unscaled" /"testset.csv"
+robust_scaler_path = MODELS_DIR / "scalers" / "scaler_robust.gz"
+scaler_path = MODELS_DIR / "scalers" / "scaler_y.gz"
+min_max_scaler_path = MODELS_DIR / "scalers" / "scaler_minmax.gz"
 
+#scaling for non-tree based models
+def scale_features(df: pd.DataFrame) -> pd.DataFrame:
+    #one-hot encoded columns
+    def filter_columns(column_names):
+        return [col for col in column_names if not (col.startswith('tm_alias') 
+                                                    or col.startswith('opp_alias') 
+                                                    or col.startswith('won_toss') 
+                                                    or col.startswith('tm_location') 
+                                                    or col.startswith('opp_location') 
+                                                    or col.startswith('roof_type')  
+                                                    or col in ['week', 'wind_speed', 'r_spread'])]
+
+    data_cols = filter_columns(df.columns.unique().to_list())
+
+    #standardization with robust handling of outliers
+    robust_scaler = RobustScaler()
+    df.loc[:,data_cols] = robust_scaler.fit_transform(df.loc[:,data_cols])
+    joblib.dump(robust_scaler, str(robust_scaler_path))
+
+    #scale target variable and save scaler for getting true to life r_spread prediction
+    scaler = StandardScaler()
+    df.loc[:,['r_spread']] = scaler.fit_transform(df.loc[:,['r_spread']])
+    joblib.dump(scaler, str(scaler_path))
+
+    #normalizing right skewed wind_speed
+    min_max_scaler = MinMaxScaler()
+    df.loc[:,['wind_speed']] = min_max_scaler.fit_transform(df.loc[:,['wind_speed']])
+    joblib.dump(min_max_scaler, str(min_max_scaler_path))
+
+    
+    return df
+    
+#for training and testing
 def prepare_tt_data(is_train: bool):
     input_path = INTERIM_DATA_DIR / "trainset.csv" if is_train else INTERIM_DATA_DIR / "testset.csv"
     df = pd.read_csv(str(input_path), index_col='id')
@@ -67,7 +107,7 @@ def prepare_tt_data(is_train: bool):
         for col in df_stats.columns.array[1:]:
             df_stats.loc[team, col] += r[col]
 
-
+    #populate running averages
     def calc_stats(r: pd.Series):
         tm_row = get_team_features(r.loc['tm_alias'])
         opp_row = get_team_features(r.loc['opp_alias'])
@@ -103,19 +143,19 @@ def prepare_tt_data(is_train: bool):
         df_tm_names = pd.read_csv(str(tm_names_path), index_col='alias')
         df_stats = df_stats.merge(df_tm_names, left_index = True, right_index=True,validate='one_to_one')
         df_stats.to_csv(str(stats_path))
-        #logger.info("Created stats")
-        processed_train_path: Path = PROCESSED_DATA_DIR / "trainset.csv"
-        df_processed.to_csv(processed_train_path)
-        #logger.info("Created trainset")
+        logger.info("Created stats")
         pd.DataFrame(0., index=[0], columns=df_processed.columns).to_csv(input_struct_path, index=False)
-        #logger.info("Created input struct")
+        logger.info("Created input struct")
+        df_processed.to_csv(unscaled_train_path)
+        scale_features(df_processed).to_csv(scaled_train_path)
+        logger.info("Created trainset")
     else:
-        processed_test_path: Path = PROCESSED_DATA_DIR / "testset.csv"
-        df_processed.to_csv(processed_test_path)
-        #logger.info("Created testset")
+        df_processed.to_csv(unscaled_test_path)
+        scale_features(df_processed).to_csv(scaled_test_path)
+        logger.info("Created testset")
     
         
-
+#for web app input
 def prepare_data(tm, opp) -> pd.DataFrame:
     df = pd.read_csv(input_struct_path).drop(columns=['r_spread'])
 
@@ -127,7 +167,7 @@ def prepare_data(tm, opp) -> pd.DataFrame:
     df['week'] = 16
     df['week_day_Sun'] = 1
     
-    #filling domed/indoor stadiums weather conditions within a range todo-change to staidum wise weather
+    #filling domed/indoor stadiums weather conditions within a range todo-change to stadium wise weather
     df['temperature'] = float(np.random.randint(60., 76.))
     df['wind_speed'] = float(np.random.randint(0., 3.))
     df['humidity_pct'] = float(np.random.randint(30., 51.))
@@ -180,8 +220,28 @@ def prepare_data(tm, opp) -> pd.DataFrame:
 
     df_processed = df.apply(calc_stats, axis=1)
 
-    return df_processed
+    #scaling should depend on the model being used - currently using NN
+    #todo: fix testset scalers are used on train stats?
+    def scale(df):
+        def filter_columns(column_names):
+            return [col for col in column_names if not (col.startswith('tm_alias') 
+                                                        or col.startswith('opp_alias') 
+                                                        or col.startswith('won_toss') 
+                                                        or col.startswith('tm_location') 
+                                                        or col.startswith('opp_location') 
+                                                        or col.startswith('roof_type')  
+                                                        or col in ['week', 'wind_speed'])]
+
+        data_cols = filter_columns(df.columns.unique().to_list())
+        robust_scaler = joblib.load(robust_scaler_path)
+        df.loc[:,data_cols] = robust_scaler.transform(df.loc[:,data_cols])
+
+        min_max_scaler = joblib.load(min_max_scaler_path)
+        df.loc[:,['wind_speed']] = min_max_scaler.transform(df.loc[:,['wind_speed']])
+        return df
+
+    return scale(pd.get_dummies(df_processed))
 
 
 if __name__ == "__main__":
-    prepare_tt_data(True)
+    prepare_tt_data(False)

@@ -16,3 +16,4 @@ scikit-learn
 tqdm
 typer
 xgboost
+torch
