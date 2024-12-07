@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const TARGET_URL = "https://dont-bet-on-sports-hp.streamlit.app/";
+const TARGET_URL = "https://dont-bet-on-sports-hp-test.streamlit.app/";
 const WAKE_UP_BUTTON_TEXT = "Make me";
 const PAGE_LOAD_GRACE_PERIOD_MS = 15000;
 
