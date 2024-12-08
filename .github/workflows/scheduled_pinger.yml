@@ -1,18 +1,16 @@
 name: Scheduled Pinger
-# This workflow is triggered at a scheduled interval of every 3 hours
 on:
   schedule:
-    # * is a special character in YAML so you have to quote this string.
-    # At 30 minutes past the hour, every 3 hours
-    - cron:  '30 */3 * * *'
+    # Runs "at minute 0 past every 3 hour" (see https://crontab.guru)
+    - cron: '0 */3 * * *'
 
 jobs:
-  pinger_job:
-    name: keep app awake
+  probe_deployed_app:
     runs-on: ubuntu-latest
-    env:
-      URL: https://dont-bet-on-sports-hp.streamlit.app/
-      METHOD: GET  
+    name: A job to probe deployed app
     steps:
-      - id: ping
-        uses: sisodiya2421/pinger@master
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Probe Deployed App Action Step
+        uses: ./probe-action # Uses an action in the probe-action directory
+        id: probe
