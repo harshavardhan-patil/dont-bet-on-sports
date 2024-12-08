@@ -2,20 +2,12 @@ name: Scheduled Pinger
 on: workflow_dispatch
 
 jobs:
-build-and-probe:
-runs-on: ubuntu-latest
-steps:
-  - name: Checkout Repository
-    uses: actions/checkout@v2
-  - name: Build Docker Image
-    run: docker build -t my-probe-image -f probe-action/Dockerfile .
-
-  - name: Run Docker Container
-    run: docker run --rm my-probe-image
-    name: A job to probe deployed app
+  build-and-probe:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Probe Deployed App Action Step
-        uses: ./probe-action # Uses an action in the probe-action directory
-        id: probe
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Build Docker Image
+        run: docker build -t my-probe-image -f probe-action/Dockerfile .
+      - name: Run Docker Container
+        run: docker run --rm my-probe-image
