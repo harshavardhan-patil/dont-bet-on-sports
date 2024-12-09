@@ -185,32 +185,39 @@ The answer to our performance woes? Convoluting on Player Stats!
 I implemented the above architecture presented in the research paper with a few key modifications
 1. I chose to include top 10 players based on the fantasy points exponentially averaged over last 7 games.
 2. The existing team stats were added as extra_features to the dense layers instead of odds
-3. The paper used BCELoss to output a win probability. I modified it to regress on r_spread instead.
+3. The paper used BCELoss to output a win probability. My previous approach was to regress on to the r_spread value. With CNN this approach was changed to predict the winner outright and use Moneyline odds for betting. This changed the problem from regression to classification
 
 ## Hyperparameter Tuning
-I used [RandomizedSearchCV](https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.RandomizedSearchCV.html#randomizedsearchcv) to perform 3-fold cross validation with 30 iterations on all 3 models, acheiving the following result. The CNN wasn't tuned
+I used [RandomizedSearchCV](https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.RandomizedSearchCV.html#randomizedsearchcv) to perform 3-fold cross validation with 30 iterations on all 3 models, acheiving the following result. 
 | Model | MAE |
 | ------ | ------ |
-|Convolutional Neural Net|2.17|
 |Plain Neural Net|11.47|
 |Random Forests|9.97|
 |Support Vectors|10.06|
 |Gradient Boosted Trees|10.05|
 
+
+The CNN wasn't tuned.
+
+| Model | Accuracy |
+| ------ | ------ |
+|Convolutional Neural Network|55.74|
 # Results
 The CNN performed the best by a mile, although it must be said that it had the significant advantage of getting to use the player stats in addition to the team stats. The simulation was based on whether the predicted r_spread was better/favorable than the offered Vegas odds. 
+
 <img src='reports/figures/cnn_sim.png' alt='Top Feature Importances'/>
+
 |||
 |--|--|
-|Win Rate| 69.00 %|
-|Return on Investment (ROI) | 31.71 %|
-|Bets Won | 356 |
-|Total Bets| 516 |
+|Win Rate| 60.33 %|
+|Return on Investment (ROI) | 14.73 %|
+|Bets Won | 254 |
+|Total Bets| 421 |
 |Total Games| 897 |
-|Total Wagered| $ 56760|
-|Total PnL | $ 18000 |
+|Total Wagered| $ 90400|
+|Total PnL | $ 13321 |
 
-So should you quit your job and start betting? No of course not. I cherry picked the threshold value by which the r_spread was better than Vegas' spread to maximize the profits. That being said, we consistently got a win rate of over 60% for the CNN across various threshold values, which shows that the model certainly has potential
+So should you quit your job and start betting? No of course not. I cherry picked the threshold value for our model output probability as well as modified the betting strategy to maximize the profits. So while the simulation is an ideal scenario, it still displays the potential of a model that include players stats and team stats combined. More advanced stats that are available on PFR will further improve the performance of such a model.
 
 
 ## Best Estimators
