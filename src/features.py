@@ -244,4 +244,4 @@ def prepare_data(tm, opp) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    prepare_tt_data(False)
+    prepare_tt_data(True)
