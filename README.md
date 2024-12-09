@@ -201,9 +201,9 @@ The CNN wasn't tuned.
 
 | Model | Accuracy |
 | ------ | ------ |
-|Convolutional Neural Network|55.74|
+|Convolutional Neural Network|55.74 %|
 # Results
-The CNN performed the best by a mile, although it must be said that it had the significant advantage of getting to use the player stats in addition to the team stats. The simulation was based on whether the predicted r_spread was better/favorable than the offered Vegas odds. 
+The CNN performed the best by a mile, although it must be said that it had the significant advantage of getting to use the player stats in addition to the team stats. The simulation was based on whether the prediction is higher than a threshold(0.9) for a high confidence bet.
 
 <img src='reports/figures/cnn_sim.png' alt='Top Feature Importances'/>
 
