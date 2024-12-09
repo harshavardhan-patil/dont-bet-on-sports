@@ -5,28 +5,34 @@ This project applies machine learning to the world of NFL game predictions.<br>
 Check out the [Web App](https://dont-bet-on-sports-hp.streamlit.app/)!
 
 # Table of Contents
-1. [Introduction](#introduction)
-    + [Project Goal](#project-goal)
-    + [Motivation](#motivation)
-    + [NFL Betting Primer](#nfl-betting-primer)
-    + [Challenge](#challenge)
-2. [Project Structure](#project-structure)
-3. [Data](#data)
-    + [Data Sources](#data-sources)
-    + [Data Cleaning](#data-cleaning)
-    + [Feature Engineering](#feature-engineering)
-      + [Target Variable](#target-variable)
-      + [Adjusted v/s Unadjusted r_spread](#adjusted-vs-unadjusted)
-      + [Weighted Averages](#weighted-averages)
-4. [Modeling and Results](#modeling-and-results)
-    + [Considering Vegas' Spread](#considering-vegas-spread)
-      + [Without Vegas Spread](#without-vegas-spread)
-      + [With Vegas Spread](#with-vegas-spread)
-    + [Hyperparameter Tuning](#hyperparameter-tuning)
-    + [Best Estimators](#best-estimators)
-5. [Web App](#web-app)
-6. [Next Steps](#next-steps)
-<BR>
+- [Don't bet on sports, kids!](#dont-bet-on-sports-kids)
+- [Table of Contents](#table-of-contents)
+- [Introduction](#introduction)
+  - [Project Goal](#project-goal)
+  - [Motivation](#motivation)
+  - [NFL Beting Primer](#nfl-beting-primer)
+    - [Spread Line](#spread-line)
+    - [Total Line](#total-line)
+    - [Money Line](#money-line)
+  - [Challenge](#challenge)
+- [Project Structure](#project-structure)
+- [Data](#data)
+  - [Data Sources](#data-sources)
+  - [Data Cleaning](#data-cleaning)
+  - [Feature Engineering](#feature-engineering)
+    - [Target Variable](#target-variable)
+    - [Adjusted v/s Unadjusted $r\\\_spread$](#adjusted-vs-unadjusted-r_spread)
+    - [Weighted Averages](#weighted-averages)
+- [Modeling](#modeling)
+  - [Considering Vegas' Spread](#considering-vegas-spread)
+    - [Without Vegas Spread](#without-vegas-spread)
+    - [With Vegas Spread](#with-vegas-spread)
+  - [Convolution](#convolution)
+  - [Hyperparameter Tuning](#hyperparameter-tuning)
+- [Results](#results)
+  - [Best Estimators](#best-estimators)
+- [Web App](#web-app)
+  - [Shoulders of Giants](#shoulders-of-giants)
 
 # Introduction
 ## Project Goal
@@ -142,12 +148,13 @@ The game attributes such as pass completions, touchdowns are present for that sp
 2. Weights $w$ would be assigned per season where *n* is the current season such that: $$w_n > w_{n-1} >> w_{n-2}...$$
 3. The weather conditions will have to be estimated per stadium based on time of year and so on. We will start off with a simple average of all matches hosted at that specific stadium for now.
 
-# Modeling and Results
+# Modeling
 Three models were tested for regressing $r\\_spread$. 
 1. Random Forests
 2. Support Vectors
 3. Gradient Boosted Trees
-4. Neural Network
+4. Plain Neural Network
+5. Convolutional Neural Network
 ## Considering Vegas' Spread
 PFR stores Vegas' spread, over/under and moneylines for past and upcoming games as well. Do we include these as predictor variables in our predictions?<br>
 <img src='reports/figures/vegas_spread_error.png' alt='Vegas Spread Error'/>
@@ -167,16 +174,44 @@ Including the Vegas' spread would have benefits of building our model on top of 
 
 We saw a slight (and significant in case of GBT) improvements in our Mean Absolute Error (MAE) for all 3 models with Vegas' spread being included in the mix. Still we are performing much worse than Vegas is!
 
+## Convolution
+Spoiler Alert! As I developed this project, the 4 models, (random forests, SVMs, GBT and Plain NN) performed quite poorly in the simulations. This led me to look for modifications to both the data and the models. This is when I came across the following research paper [Exploiting sports-betting market using machine learning](https://www.researchgate.net/publication/331218530_Exploiting_sports-betting_market_using_machine_learning). The following were the key points highlighted:
+1. Model with only team stats performed significantly worse than models that consider player stats.
+2. Using Vegas' spread in your predictions leads to inherent bias in the model which negatively affects performance.
+
+The answer to our performance woes? Convoluting on Player Stats!
+![https://www.researchgate.net/figure/The-convolutional-neural-network-for-player-level-data-The-input-to-the-network-are-two_fig1_331218530](reports/figures/cnn_arch.png)
+
+I implemented the above architecture presented in the research paper with a few key modifications
+1. I chose to include top 10 players based on the fantasy points exponentially averaged over last 7 games.
+2. The existing team stats were added as extra_features to the dense layers instead of odds
+3. The paper used BCELoss to output a win probability. I modified it to regress on r_spread instead.
+
 ## Hyperparameter Tuning
-I used [RandomizedSearchCV](https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.RandomizedSearchCV.html#randomizedsearchcv) to perform 3-fold cross validation with 30 iterations on all 3 models, acheiving the following result
+I used [RandomizedSearchCV](https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.RandomizedSearchCV.html#randomizedsearchcv) to perform 3-fold cross validation with 30 iterations on all 3 models, acheiving the following result. The CNN wasn't tuned
 | Model | MAE |
 | ------ | ------ |
+|Convolutional Neural Net|2.17|
+|Plain Neural Net|11.47|
 |Random Forests|9.97|
 |Support Vectors|10.06|
 |Gradient Boosted Trees|10.05|
-|Neural Net|11.47|
 
-Our performance has certainly improved, but our best estimate still falls well short of Vegas.
+# Results
+The CNN performed the best by a mile, although it must be said that it had the significant advantage of getting to use the player stats in addition to the team stats. The simulation was based on whether the predicted r_spread was better/favorable than the offered Vegas odds. 
+<img src='reports/figures/cnn_sim.png' alt='Top Feature Importances'/>
+|||
+|--|--|
+|Win Rate| 69.00 %|
+|Return on Investment (ROI) | 31.71 %|
+|Bets Won | 356 |
+|Total Bets| 516 |
+|Total Games| 897 |
+|Total Wagered| $ 56760|
+|Total PnL | $ 18000 |
+
+So should you quit your job and start betting? No of course not. I cherry picked the threshold value by which the r_spread was better than Vegas' spread to maximize the profits. That being said, we consistently got a win rate of over 60% for the CNN across various threshold values, which shows that the model certainly has potential
+
 
 ## Best Estimators
 <img src='reports/figures/top_feature_importances.png' alt='Top Feature Importances'/>
@@ -203,11 +238,8 @@ The feature week suggests that the performance varies across the season. This co
 The model is accessible with an interactive web-app. This allows users to select a home-team and an away-team, after which the model internally predicts a $r\_spread$ score and outputs and estimation of the winning team along with the predicted spread.
 <img src='reports/figures/web-app-ui.jpeg' alt='Web App UI'/>
 
-# Next Steps
-This project is being actively developed, hence this list will certainly not be the most comprehensive. However the following are the current priorities:
-1. Improve predictive performance through different models.
-2. Setup the model to predict games for the ongoing season. This will require extensive additions to the data pipeline and training pipeline. However the aim is to setup daily jobs that will update the current season stats.
-3. Seasonally weighted averages, yes I have been lazy in not implementing these, so really this should be #1 on the list.
+## Shoulders of Giants
+[Hubáček, Ondřej & Šír, Gustav & Železný, Filip. (2019). Exploiting sports-betting market using machine learning. International Journal of Forecasting. 35. 10.1016/j.ijforecast.2019.01.001.](https://www.researchgate.net/publication/331218530_Exploiting_sports-betting_market_using_machine_learning) 
 
 <h2>Thank you for visiting!</h2>
 
